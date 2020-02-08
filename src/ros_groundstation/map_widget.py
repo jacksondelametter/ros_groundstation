@@ -36,6 +36,10 @@ class MapWindow(QWidget):
         self.init_op_window()
         self._recenter.clicked.connect(self._marble_map.recenter)
 
+        # Code for waypoints
+        self._start_waypoint.clicked.connect(self._marble_map.start_waypoint_clicked);
+        self._end_waypoint.clicked.connect(self._marble_map.end_waypoint_clicked);
+
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)
         self._map_options.clicked.connect(self.open_op_window)

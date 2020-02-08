@@ -11,6 +11,9 @@ import map_info_parser
 from Signals import WP_Handler
 from .Geo import Geobase
 from .map_subscribers import *
+import os
+
+PWD = os.path.dirname(os.path.abspath(__file__))
 
 class MarbleMap(QWidget):
     def __init__(self, gps_dict, blankname, parent=None):
@@ -20,6 +23,8 @@ class MarbleMap(QWidget):
 
         # Code for determinig clicks
         self.start_waypoint = None
+        self.end_waypoint = None
+        self._start_waypoint_clicked = False
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -106,8 +111,12 @@ class MarbleMap(QWidget):
 
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
-            self.start_waypoint = QMouseEvent.pos()
-            self.update()
+            if self._start_waypoint_clicked:
+                self.start_waypoint = QMouseEvent.pos()
+                self.update()
+            else:
+                self.end_waypoint = QMouseEvent.pos()
+                self.update()
             #self.WPH.emit_clicked(clicked_lat, clicked_lon)
         else:
             self.movement_offset = QMouseEvent.pos()
@@ -122,6 +131,14 @@ class MarbleMap(QWidget):
             self.draw_gridlines = True
         else:
             self.draw_gridlines = False
+
+    def start_waypoint_clicked(self):
+        self._start_waypoint_clicked = True
+
+    def end_waypoint_clicked(self):
+        self._start_waypoint_clicked = False
+
+
 
     # =====================================================
     # ==================== FOR DRAWING ====================
@@ -151,7 +168,10 @@ class MarbleMap(QWidget):
             self.draw_plane(painter)
 
         # Code for drawing waypoint if set
-        if self.start_waypoint is not None:
+        if self._start_waypoint_clicked and self.start_waypoint is not None:
+            painter.setPen(QPen(QBrush(Qt.green), 2, Qt.SolidLine, Qt.RoundCap))
+            painter.drawEllipse(self.start_waypoint, 10, 10)
+        elif self.end_waypoint is not None:
             painter.setPen(QPen(QBrush(Qt.red), 2, Qt.SolidLine, Qt.RoundCap))
             painter.drawEllipse(self.start_waypoint, 10, 10)
 

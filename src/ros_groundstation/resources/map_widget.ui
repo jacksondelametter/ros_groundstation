@@ -46,6 +46,32 @@
             </widget>
           </item>
           <item>
+            <widget class="QPushButton" name="_start_waypoint">
+              <property name="maximumSize">
+                <size>
+                  <width>80</width>
+                  <height>16777215</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>Start</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="_end_waypoint">
+              <property name="maximumSize">
+                <size>
+                  <width>80</width>
+                  <height>16777215</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>End</string>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QPushButton" name="_map_options">
               <property name="maximumSize">
                 <size>
