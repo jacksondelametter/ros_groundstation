@@ -16,6 +16,10 @@ class MarbleMap(QWidget):
     def __init__(self, gps_dict, blankname, parent=None):
         super(MarbleMap, self).__init__() # QWidget constructor
         self.WPH = WP_Handler()
+        self.setCursor(QCursor(Qt.CrossCursor))
+
+        # Code for determinig clicks
+        self.start_waypoint = None
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -24,7 +28,8 @@ class MarbleMap(QWidget):
         self.change_home(map_info_parser.get_default())
 
         self.GB = Geobase(self.latlon[0], self.latlon[1]) # For full current path drawer
-        self._mouse_attentive = False
+        #self._mouse_attentive = False
+        self._mouse_attentive = True
         self.movement_offset = QPoint(0,0)
 
         self.mouse_event_counter = 0
@@ -101,7 +106,8 @@ class MarbleMap(QWidget):
 
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
-            print 'OUCH'
+            self.start_waypoint = QMouseEvent.pos()
+            self.update()
             #self.WPH.emit_clicked(clicked_lat, clicked_lon)
         else:
             self.movement_offset = QMouseEvent.pos()
@@ -143,6 +149,11 @@ class MarbleMap(QWidget):
             self.draw_currentpath(painter)
         if StateSub.enabled:
             self.draw_plane(painter)
+
+        # Code for drawing waypoint if set
+        if self.start_waypoint is not None:
+            painter.setPen(QPen(QBrush(Qt.red), 2, Qt.SolidLine, Qt.RoundCap))
+            painter.drawEllipse(self.start_waypoint, 10, 10)
 
         painter.end()
 
