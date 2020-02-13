@@ -199,6 +199,8 @@ class GoogleMapPlotter():
         # find out which i, j values correspond to each corner
         min_i, max_j = self.localize_point(self.southwest, self.mz_obj.min_latlon, self.mz_obj.max_latlon)
         max_i, min_j = self.localize_point(self.northeast, self.mz_obj.min_latlon, self.mz_obj.max_latlon)
+        # Prints boundaries in terms of tile index
+        #print('min i: ', min_i, ' max i: ', max_i, ' min j', min_j, ' max j: ', max_j)
 
         # fetch and paste images onto a big canvas
         bigsize_x = (max_i - min_i + 1) * TILEWIDTH
@@ -218,3 +220,15 @@ class GoogleMapPlotter():
         self.y_offset = GoogleMapPlotter.rel_lat_to_rel_pix(upper_left_lat, self.north, self.zoom)
 
         return bigimage
+
+    def getRowColFromPixel(self, x, y):
+        min_i, max_j = self.localize_point(self.southwest, self.mz_obj.min_latlon, self.mz_obj.max_latlon)
+        max_i, min_j = self.localize_point(self.northeast, self.mz_obj.min_latlon, self.mz_obj.max_latlon)
+        #print('min i: ', min_i, ' max i: ', max_i, ' min j', min_j, ' max j: ', max_j)
+        total_rows = self.width / TILEWIDTH
+        total_collumns = self.height / TILEHEIGHT
+        #relativeRow = x % total_rows
+        #relativeCollumn = y % total_collumns
+        print('row', self.width, ' collumn: ', self.height)
+        #return row, column
+

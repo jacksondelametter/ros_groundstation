@@ -33,8 +33,8 @@ class MarbleMap(QWidget):
         self.change_home(map_info_parser.get_default())
 
         self.GB = Geobase(self.latlon[0], self.latlon[1]) # For full current path drawer
-        self._mouse_attentive = False
-        #self._mouse_attentive = True
+        #self._mouse_attentive = False
+        self._mouse_attentive = True
         self.movement_offset = QPoint(0,0)
 
         self.mouse_event_counter = 0
@@ -94,6 +94,8 @@ class MarbleMap(QWidget):
                     lon_incremented = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, delta_x, self.GMP.zoom)
                     delta_y = self.lat_multiplier * qpoint_delta.y()
                     lat_incremented = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, delta_y, self.GMP.zoom)
+                    # Prints center longitude and lattitude
+                    #print('lattitude: ', lat_incremented, ' longitude: ', lon_incremented);
                     self.GMP.UpdateView(lat_incremented, lon_incremented)
                     self.mouse_event_counter = 0
 
@@ -112,11 +114,12 @@ class MarbleMap(QWidget):
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
             if self._start_waypoint_clicked:
-                print('start waypoint updated');
+                #print('start waypoint updated');
                 self.start_waypoint = QMouseEvent.pos()
+                self.GMP.getRowColFromPixel(self.start_waypoint.x(), self.start_waypoint.y())
                 self.update()
             else:
-                print('end waypoint updated')
+                #print('end waypoint updated')
                 self.end_waypoint = QMouseEvent.pos()
                 self.update()
             #self.WPH.emit_clicked(clicked_lat, clicked_lon)
