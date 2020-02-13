@@ -116,11 +116,17 @@ class MarbleMap(QWidget):
             if self._start_waypoint_clicked:
                 #print('start waypoint updated');
                 self.start_waypoint = QMouseEvent.pos()
-                self.GMP.getRowColFromPixel(self.start_waypoint.x(), self.start_waypoint.y())
+                #self.GMP.getRowColFromPixel(self.start_waypoint.x(), self.start_waypoint.y())
+                lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, self.start_waypoint.x(), self.GMP.zoom)
+                lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, self.start_waypoint.y(), self.GMP.zoom)
+                print('lat: ', lat, " lon: ", lon)
                 self.update()
             else:
                 #print('end waypoint updated')
                 self.end_waypoint = QMouseEvent.pos()
+                lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, self.end_waypoint.x(), self.GMP.zoom)
+                lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, self.end_waypoint.y(), self.GMP.zoom)
+                print('lat: ', lat, " lon: ", lon)
                 self.update()
             #self.WPH.emit_clicked(clicked_lat, clicked_lon)
         else:
