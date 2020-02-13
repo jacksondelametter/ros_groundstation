@@ -33,8 +33,8 @@ class MarbleMap(QWidget):
         self.change_home(map_info_parser.get_default())
 
         self.GB = Geobase(self.latlon[0], self.latlon[1]) # For full current path drawer
-        #self._mouse_attentive = False
-        self._mouse_attentive = True
+        self._mouse_attentive = False
+        #self._mouse_attentive = True
         self.movement_offset = QPoint(0,0)
 
         self.mouse_event_counter = 0
@@ -112,9 +112,11 @@ class MarbleMap(QWidget):
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
             if self._start_waypoint_clicked:
+                print('start waypoint updated');
                 self.start_waypoint = QMouseEvent.pos()
                 self.update()
             else:
+                print('end waypoint updated')
                 self.end_waypoint = QMouseEvent.pos()
                 self.update()
             #self.WPH.emit_clicked(clicked_lat, clicked_lon)
@@ -168,12 +170,12 @@ class MarbleMap(QWidget):
             self.draw_plane(painter)
 
         # Code for drawing waypoint if set
-        if self._start_waypoint_clicked and self.start_waypoint is not None:
+        if self.start_waypoint is not None:
             painter.setPen(QPen(QBrush(Qt.green), 2, Qt.SolidLine, Qt.RoundCap))
             painter.drawEllipse(self.start_waypoint, 10, 10)
-        elif self.end_waypoint is not None:
+        if self.end_waypoint is not None:
             painter.setPen(QPen(QBrush(Qt.red), 2, Qt.SolidLine, Qt.RoundCap))
-            painter.drawEllipse(self.start_waypoint, 10, 10)
+            painter.drawEllipse(self.end_waypoint, 10, 10)
 
         painter.end()
 
