@@ -111,12 +111,11 @@ class MarbleMap(QWidget):
 
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
-            #print('start waypoint updated');
             self.waypoint = QMouseEvent.pos()
-            #self.GMP.getRowColFromPixel(self.start_waypoint.x(), self.start_waypoint.y())
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, self.waypoint.x(), self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, self.waypoint.y(), self.GMP.zoom)
             print('lat: ', lat, " lon: ", lon)
+
             self.update()
         else:
             self.movement_offset = QMouseEvent.pos()
@@ -132,9 +131,11 @@ class MarbleMap(QWidget):
         else:
             self.draw_gridlines = False
 
-    def start_waypoint_clicked(self, isActivated):
-        print(isActivated)
-        self._mouse_attentive = isActivated
+    def start_waypoint_clicked(self, button):
+        clicked = button.isChecked()
+        self._mouse_attentive = not clicked
+        button.setDown(not clicked)
+        button.setCheckable(not clicked)
 
 
     # =====================================================

@@ -64,11 +64,4 @@ class MapWindow(QWidget):
         pass
 
     def add_wp_clicked(self):
-        if self._add_wp.isChecked() is False:
-            self._add_wp.setDown(True)
-            self._add_wp.setCheckable(True)
-            self._marble_map.start_waypoint_clicked(True)
-        else:
-            self._add_wp.setDown(False)
-            self._add_wp.setCheckable(False)
-            self._marble_map.start_waypoint_clicked(False)
+        self._marble_map.start_waypoint_clicked(self._add_wp)
