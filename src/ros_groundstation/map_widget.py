@@ -37,8 +37,9 @@ class MapWindow(QWidget):
         self._recenter.clicked.connect(self._marble_map.recenter)
 
         # Code for waypoints
-        self._start_waypoint.clicked.connect(self._marble_map.start_waypoint_clicked);
-        self._end_waypoint.clicked.connect(self._marble_map.end_waypoint_clicked);
+        #self._start_waypoint.clicked.connect(self._marble_map.start_waypoint_clicked);
+        #self._end_waypoint.clicked.connect(self._marble_map.end_waypoint_clicked);
+        self._add_wp.clicked.connect(self.add_wp_clicked);
 
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)
@@ -61,3 +62,13 @@ class MapWindow(QWidget):
 
     def restore_settings(self, plugin_settings, instance_settings):
         pass
+
+    def add_wp_clicked(self):
+        if self._add_wp.isChecked() is False:
+            self._add_wp.setDown(True)
+            self._add_wp.setCheckable(True)
+            self._marble_map.start_waypoint_clicked(True)
+        else:
+            self._add_wp.setDown(False)
+            self._add_wp.setCheckable(False)
+            self._marble_map.start_waypoint_clicked(False)
