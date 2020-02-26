@@ -213,26 +213,17 @@ class GoogleMapPlotter():
                 self.paste(bigimage, tile, (i-min_i)*TILEWIDTH, (j-min_j)*TILEHEIGHT)
 
         upper_left_center = self.mz_obj.tiles[min_i][min_j]
-        lower_left_center = self.mz_obj.tiles[min_i][max_j]
         upper_right_center = self.mz_obj.tiles[max_i][min_j]
-        lower_right_center = self.mz_obj.tiles[max_i][max_j]
+        '''print('left bounds lat: ', lower_left_center.lat, ' lon: ', lower_left_center.lon)
+                                print('right bounds lat: ', upper_right_center.lat, ' lon: ', upper_right_center.lon)
+                                sys.exit('')'''
 
         upper_left_lon = GoogleMapPlotter.pix_to_rel_lon(upper_left_center.lon, int(-TILEWIDTH/2), self.zoom)
         upper_left_lat = GoogleMapPlotter.pix_to_rel_lat(upper_left_center.lat, int(-TILEWIDTH/2), self.zoom)
 
-        lower_left_lon = GoogleMapPlotter.pix_to_rel_lon(lower_left_center.lon, int(-TILEWIDTH/2), self.zoom)
-        lower_left_lat = GoogleMapPlotter.pix_to_rel_lat(lower_left_center.lat, int(-TILEWIDTH/2), self.zoom)
-
-        upper_right_lon = GoogleMapPlotter.pix_to_rel_lon(upper_right_center.lon, int(-TILEWIDTH/2), self.zoom)
-        upper_right_lat = GoogleMapPlotter.pix_to_rel_lat(upper_right_center.lat, int(-TILEWIDTH/2), self.zoom)
-
-        lower_right_lon = GoogleMapPlotter.pix_to_rel_lon(lower_right_center.lon, int(-TILEWIDTH/2), self.zoom)
-        lower_right_lat = GoogleMapPlotter.pix_to_rel_lat(lower_right_center.lat, int(-TILEWIDTH/2), self.zoom)
-
-        self.upper_left_bounds = (upper_left_lat, upper_left_lon)
-        self.lower_left_bounds = (lower_left_lat, lower_left_lat)
-        self.upper_right_bounds = (upper_right_lat, upper_right_lat)
-        self.lower_right_bounds = (lower_right_lat, lower_right_lat)
+        '''print('upper left lat lon:', self.upper_left_bounds.lat, ' ', self.upper_left_bounds.lon)
+                                print('lower right lat lon: ', self.lower_right_bounds.lat, ' ', self.lower_right_bounds.lon)
+                                sys.exit('')'''
 
         self.x_offset = GoogleMapPlotter.rel_lon_to_rel_pix(upper_left_lon, self.west, self.zoom)
         self.y_offset = GoogleMapPlotter.rel_lat_to_rel_pix(upper_left_lat, self.north, self.zoom)
