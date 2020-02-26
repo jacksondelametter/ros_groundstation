@@ -39,7 +39,7 @@ class MapWindow(QWidget):
         # Code for waypoints
         #self._start_waypoint.clicked.connect(self._marble_map.start_waypoint_clicked);
         #self._end_waypoint.clicked.connect(self._marble_map.end_waypoint_clicked);
-        self._add_wp.clicked.connect(self.add_wp_clicked);
+        self._marble_map.set_add_wp_button(self._add_wp)
 
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)

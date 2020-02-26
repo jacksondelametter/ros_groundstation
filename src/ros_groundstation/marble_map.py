@@ -23,7 +23,7 @@ class MarbleMap(QWidget):
         self.setCursor(QCursor(Qt.CrossCursor))
 
         # Code for determinig clicks
-        self.waypoint = None
+        self.waypoints = []
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -111,12 +111,13 @@ class MarbleMap(QWidget):
     def mousePressEvent(self, QMouseEvent):
         if self._mouse_attentive:
             mouse_click = QMouseEvent.pos()
-            print(mouse_click)
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
-            self.waypoint = LatLon(lat, lon)
+            waypoint = LatLon(lat, lon)
+            self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
             self.update()
+            self.deactivate_add_wp()
         else:
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
@@ -131,11 +132,21 @@ class MarbleMap(QWidget):
         else:
             self.draw_gridlines = False
 
-    def start_waypoint_clicked(self, button):
-        clicked = button.isChecked()
-        self._mouse_attentive = not clicked
-        button.setDown(not clicked)
-        button.setCheckable(not clicked)
+    def toggle_add_wp(self, mode):
+        self._mouse_attentive = mode
+        self.add_wp_button.setDown(mode)
+        self.add_wp_button.setCheckable(mode)
+
+    def set_add_wp(self):
+        self.toggle_add_wp(True)
+
+    def deactivate_add_wp(self):
+        self.toggle_add_wp(False)
+
+    def set_add_wp_button(self, button):
+        self.add_wp_button = button
+        self.add_wp_button.clicked.connect(self.set_add_wp)
+
 
 
     # =====================================================
@@ -165,18 +176,8 @@ class MarbleMap(QWidget):
         if StateSub.enabled:
             self.draw_plane(painter)
 
-        if self.waypoint is not None:
-            self.draw_waypoints(painter)
-
-        # Code for drawing waypoint if set
-        '''if self.GMP.is_waypoint_on_current_map(self.waypoint):
-                                    self.draw_waypoints(painter)
-                                    painter.setPen(QPen(QBrush(Qt.green), 2, Qt.SolidLine, Qt.RoundCap))
-                                                                        point = QPoint(self.lon_to_pix(self.waypoint.lon), self.lat_to_pix(self.waypoint.lat))
-                                                                        print(point)
-                                                                        sys.exit('')
-                                                                        painter.drawEllipse(self.waypoint, 10, 10)'''
-
+        # Draws waypoints
+        self.draw_waypoints(painter)
         painter.end()
 
     # draws gridlines at 10-meter increments
@@ -216,15 +217,16 @@ class MarbleMap(QWidget):
     def draw_waypoints(self, painter):
         painter.setPen(QPen(QBrush(Qt.darkRed), 2.5, Qt.SolidLine, Qt.RoundCap))
         # it can be assumed that all waypoints are converted to latlon if the sub is enabled
-        x = self.lon_to_pix(self.waypoint.lon)
-        y = self.lat_to_pix(self.waypoint.lat)
-        '''print(x, ',', y)
-                                sys.exit('')'''
-        if x >=0 and x <= self.GMP.width and y >= 0 and y <= self.GMP.height:
-            rad = 5
-            painter.drawEllipse(x-rad, y-rad, 2*rad, 2*rad)
-            '''if waypoint.chi_valid:
-                                                    painter.drawLine(x, y, x+2*rad*sin(waypoint.chi_d), y-2*rad*cos(waypoint.chi_d))'''
+        for waypoint in self.waypoints:
+            x = self.lon_to_pix(waypoint.lon)
+            y = self.lat_to_pix(waypoint.lat)
+            '''print(x, ',', y)
+                                    sys.exit('')'''
+            if x >=0 and x <= self.GMP.width and y >= 0 and y <= self.GMP.height:
+                rad = 15
+                painter.drawEllipse(x-rad, y-rad, 2*rad, 2*rad)
+                '''if waypoint.chi_valid:
+                                                        painter.drawLine(x, y, x+2*rad*sin(waypoint.chi_d), y-2*rad*cos(waypoint.chi_d))'''
 
     def draw_obstacles(self, painter):
         pass # ++++++++++++++++++++++++++++++++++++++++++
