@@ -8,6 +8,7 @@ import os
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from waypoint_popup import WaypointPopup
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 

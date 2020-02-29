@@ -13,6 +13,8 @@ from .Geo import Geobase
 from .map_subscribers import *
 import os
 from gm_plotter import LatLon
+from waypoint_popup import WaypointPopup
+from op_window import OpWindow
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,6 +26,7 @@ class MarbleMap(QWidget):
 
         # Code for determinig clicks
         self.waypoints = []
+        self.wp_popup = WaypointPopup()
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -118,6 +121,8 @@ class MarbleMap(QWidget):
             #print('lat: ', lat, " lon: ", lon)
             self.update()
             self.deactivate_add_wp()
+            self.show_waypoint_popup()
+
         else:
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
@@ -146,6 +151,13 @@ class MarbleMap(QWidget):
     def set_add_wp_button(self, button):
         self.add_wp_button = button
         self.add_wp_button.clicked.connect(self.set_add_wp)
+
+    def show_waypoint_popup(self):
+        '''op = OpWindow(self)
+                                op.show()'''
+        self.wp_popup = WaypointPopup()
+        self.wp_popup.resize(200, 200)
+        self.wp_popup.show()
 
 
 
