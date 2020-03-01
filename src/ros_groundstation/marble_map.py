@@ -13,7 +13,9 @@ from .Geo import Geobase
 from .map_subscribers import *
 import os
 from gm_plotter import LatLon
-from waypoint_popup import WaypointPopup
+from create_waypoint_popup import CreateWaypointPopup
+from rosplane_msgs.msg import Waypoint
+from map_subscribers import StateSub
 from op_window import OpWindow
 
 PWD = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +28,6 @@ class MarbleMap(QWidget):
 
         # Code for determinig clicks
         self.waypoints = []
-        self.wp_popup = WaypointPopup()
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -116,12 +117,12 @@ class MarbleMap(QWidget):
             mouse_click = QMouseEvent.pos()
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
-            waypoint = LatLon(lat, lon)
+            waypoint_latlon = LatLon(lat, lon)
             self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
             self.update()
             self.deactivate_add_wp()
-            self.show_waypoint_popup()
+            self.show_waypoint_popup(waypoint_latlon)
 
         else:
             self.movement_offset = QMouseEvent.pos()
@@ -152,12 +153,17 @@ class MarbleMap(QWidget):
         self.add_wp_button = button
         self.add_wp_button.clicked.connect(self.set_add_wp)
 
-    def show_waypoint_popup(self):
+    def show_waypoint_popup(self, wp_latlon):
         '''op = OpWindow(self)
                                 op.show()'''
-        self.wp_popup = WaypointPopup()
-        self.wp_popup.resize(200, 200)
+        self.wp_popup = CreateWaypointPopup(self, wp_latlon)
         self.wp_popup.show()
+
+    def create_wp(self, wp_latlon, air_speed, alt):
+        wp = Waypoint()
+        print(StateSub.lat)
+        #self.waypoints.append(waypoint)
+        self.wp_popup.close()
 
 
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>WaypointPopup</class>
+  <widget class="QWidget" name="MapWindow">
+    <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+        <layout class="QHBoxLayout" name="horizontalayout">
+          <item>
+            <widget class="QLabel" name="_air_speed_label">
+              <property name="text">
+                <string>Air Speed</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="_enter_air_speed"/>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <layout class="QHBoxLayout" name="horizontalayout">
+          <item>
+            <widget class="QLabel" name="_alt_label">
+            <property name="text">
+              <string>alt</string>
+            </property>
+          </widget>
+          </item>
+          <item>
+            <widget class="QLineEdit" name="_enter_alt"/>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QPushButton" name="_create_wp">
+          <property name="text">
+            <string>Create WP</string>
+          </property>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+</ui>
