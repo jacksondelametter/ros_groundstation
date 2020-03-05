@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 QString = type("")
 import os.path
-from math import sin, cos, radians
+from math import sin, cos, radians, asin, sqrt
 
 import map_info_parser
 from Signals import WP_Handler
@@ -14,7 +14,7 @@ from .map_subscribers import *
 import os
 from gm_plotter import LatLon
 from create_waypoint_popup import CreateWaypointPopup
-from rosplane_msgs.msg import Waypoint
+from rosplane_msgs.msg import Waypoint, State
 from map_subscribers import StateSub
 from op_window import OpWindow
 
@@ -53,6 +53,7 @@ class MarbleMap(QWidget):
 
         self.draw_gridlines = False
         self.grid_dist = 20 # meters
+
 
     def change_home(self, map_name):
         self._home_map = map_name
@@ -98,6 +99,7 @@ class MarbleMap(QWidget):
                     delta_y = self.lat_multiplier * qpoint_delta.y()
                     lat_incremented = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, delta_y, self.GMP.zoom)
                     self.GMP.UpdateView(lat_incremented, lon_incremented)
+                    print('InitialLat', self.latlon[0], 'initial lon', self.latlon[1])
                     self.mouse_event_counter = 0
 
     def recenter(self):
@@ -120,6 +122,7 @@ class MarbleMap(QWidget):
             waypoint_latlon = LatLon(lat, lon)
             self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
+            #self.injectState()
             self.update()
             self.deactivate_add_wp()
             self.show_waypoint_popup(waypoint_latlon)
@@ -161,10 +164,26 @@ class MarbleMap(QWidget):
 
     def create_wp(self, wp_latlon, air_speed, alt):
         wp = Waypoint()
-        print(StateSub.lat)
         #self.waypoints.append(waypoint)
+        distance = self.GB.gps_to_ned(wp_latlon.lat, wp_latlon.lon, alt)
+        print('distance: ', distance)
         self.wp_popup.close()
 
+
+    # Used to make a fake state where current state is in middle of the
+    def injectState(self):
+        state = State()
+        StateSub.state_callback(state)
+        print(StateSub.lon, ' ', StateSub.lat)
+
+
+    def getDistance(self, lat1, lon1, lat2, lon2):
+        dlon = lon2 - lon1 
+        dlat = lat2 - lat1 
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a)) 
+        r = 6371000 # Radius of earth in kilometers. Use 3956 for miles
+        return c * r
 
 
     # =====================================================
@@ -195,6 +214,7 @@ class MarbleMap(QWidget):
             self.draw_plane(painter)
 
         # Draws waypoints
+        #self.draw_plane(painter)
         self.draw_waypoints(painter)
         painter.end()
 
@@ -304,6 +324,7 @@ class MarbleMap(QWidget):
             painter.drawLine(pt_3_x, pt_3_y, pt_4_x, pt_4_y)
             painter.drawLine(pt_3_x, pt_3_y, pt_5_x, pt_5_y)
             painter.drawLine(pt_6_x, pt_6_y, pt_7_x, pt_7_y)
+
 
     def lon_to_pix(self, lon): # assuming origin at upper left
         return GoogleMapPlotter.rel_lon_to_rel_pix(self.GMP.west, lon, self.GMP.zoom)

@@ -79,6 +79,7 @@ class StateSub():
         StateSub.state_topic = new_state_topic
         if not StateSub.state_topic is None:
             StateSub.state_sub = rospy.Subscriber(StateSub.state_topic, State, StateSub.state_callback)
+            StateSub.state_callback(State())
 
     @staticmethod
     def getStateTopic():
@@ -86,6 +87,7 @@ class StateSub():
 
     @staticmethod
     def state_callback(state):
+        print('State posted')
         if InitSub.enabled:
             n = state.position[0]
             e = state.position[1]
