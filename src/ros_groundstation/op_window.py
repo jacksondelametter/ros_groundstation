@@ -6,6 +6,7 @@ QString = type("")
 import os, rospy
 
 from .map_subscribers import *
+from .map_publishers import *
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -215,9 +216,9 @@ class OpWindow(QWidget):
         checked = state_integer
         topic_name = str(self.NEDwGPS_wppub_textedit.toPlainText())
         if checked:
-            print 'functionality pending'
+            WaypointPub.updateWaypointPub(topic_name)
         else:
-            print 'functionality pending'
+            WaypointPub.closePublisher()
 
     def handle_gpssub_checkbox(self, state_integer):
         checked = state_integer

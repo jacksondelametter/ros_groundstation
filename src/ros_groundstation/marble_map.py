@@ -17,6 +17,7 @@ from create_waypoint_popup import CreateWaypointPopup
 from rosplane_msgs.msg import Waypoint, State
 from map_subscribers import StateSub
 from op_window import OpWindow
+from .map_publishers import *
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -164,26 +165,14 @@ class MarbleMap(QWidget):
 
     def create_wp(self, wp_latlon, air_speed, alt):
         wp = Waypoint()
-        #self.waypoints.append(waypoint)
         distance = self.GB.gps_to_ned(wp_latlon.lat, wp_latlon.lon, alt)
-        print('distance: ', distance)
+        wp.w = distance
+        wp.Va_d = air_speed
+        #print('distance: ', distance)
+        #self.waypoints.append(wp)
+        WaypointPub.publishWaypoint(wp)
         self.wp_popup.close()
-
-
-    # Used to make a fake state where current state is in middle of the
-    def injectState(self):
-        state = State()
-        StateSub.state_callback(state)
-        print(StateSub.lon, ' ', StateSub.lat)
-
-
-    def getDistance(self, lat1, lon1, lat2, lon2):
-        dlon = lon2 - lon1 
-        dlat = lat2 - lat1 
-        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-        c = 2 * asin(sqrt(a)) 
-        r = 6371000 # Radius of earth in kilometers. Use 3956 for miles
-        return c * r
+        print('Added waypoint')
 
 
     # =====================================================

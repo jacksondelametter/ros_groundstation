@@ -10,7 +10,7 @@ pathSubTopic: /fixedwing/current_path
 waypointSubChecked: true
 waypointSubTopic: /fixedwing/waypoint_path
 
-waypointPubChecked: false
+waypointPubChecked: true
 waypointPubTopic: /fixedwing/waypoint_path
 
 rcRawSubChecked: true
