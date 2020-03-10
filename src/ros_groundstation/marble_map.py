@@ -121,9 +121,8 @@ class MarbleMap(QWidget):
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
             waypoint_latlon = LatLon(lat, lon)
-            self.waypoints.append(LatLon(lat, lon))
+            #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
-            #self.injectState()
             self.update()
             self.deactivate_add_wp()
             self.show_waypoint_popup(waypoint_latlon)
@@ -204,7 +203,6 @@ class MarbleMap(QWidget):
 
         # Draws waypoints
         #self.draw_plane(painter)
-        self.draw_waypoints(painter)
         painter.end()
 
     # draws gridlines at 10-meter increments
@@ -244,7 +242,7 @@ class MarbleMap(QWidget):
     def draw_waypoints(self, painter):
         painter.setPen(QPen(QBrush(Qt.darkRed), 2.5, Qt.SolidLine, Qt.RoundCap))
         # it can be assumed that all waypoints are converted to latlon if the sub is enabled
-        for waypoint in self.waypoints:
+        for waypoint in WaypointSub.waypoints:
             x = self.lon_to_pix(waypoint.lon)
             y = self.lat_to_pix(waypoint.lat)
             '''print(x, ',', y)

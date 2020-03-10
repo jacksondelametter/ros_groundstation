@@ -79,6 +79,7 @@ class StateSub():
         StateSub.state_topic = new_state_topic
         if not StateSub.state_topic is None:
             StateSub.state_sub = rospy.Subscriber(StateSub.state_topic, State, StateSub.state_callback)
+            # Injects state for testing
             StateSub.state_callback(State())
 
     @staticmethod
