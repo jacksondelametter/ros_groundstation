@@ -61,6 +61,7 @@ class InitSub():
 
 class StateSub():
     state_sub = None
+    state_pub = None
     state_topic = None
     lat = 0.0
     lon = 0.0
@@ -80,7 +81,19 @@ class StateSub():
         if not StateSub.state_topic is None:
             StateSub.state_sub = rospy.Subscriber(StateSub.state_topic, State, StateSub.state_callback)
             # Injects state for testing
-            StateSub.state_callback(State())
+            StateSub.state_pub = rospy.Publisher(new_state_topic, State)
+
+    @staticmethod
+    def injectState():
+        print('Injecting new state')
+        state = State()
+        state.position = [0, 0, 0]
+        state.Va = 5
+        state.initial_lat = 40.2518
+        state.initial_lon = -111.6493
+        state.initial_alt = 10
+        StateSub.state_pub.publish(state)
+
 
     @staticmethod
     def getStateTopic():
@@ -88,7 +101,6 @@ class StateSub():
 
     @staticmethod
     def state_callback(state):
-        print('State posted')
         if InitSub.enabled:
             n = state.position[0]
             e = state.position[1]
@@ -213,7 +225,8 @@ class PathSub():
             PathSub.path_sub = None
 
 class renderable_wp():
-    def __init__(self, lat, lon, alt, chi_d, chi_valid, Va_d, converted=True):
+    def __init__(self, w, lat, lon, alt, chi_d, chi_valid, Va_d, converted=True, set_current=False):
+        self.w = w
         self.lat = lat
         self.lon = lon
         self.alt = alt
@@ -221,6 +234,7 @@ class renderable_wp():
         self.chi_valid = chi_valid
         self.Va_d = Va_d
         self.converted = converted
+        self.set_current = set_current
 
 class WaypointSub():
     wp_sub = None
@@ -244,14 +258,14 @@ class WaypointSub():
     def waypoint_callback(wp):
         if InitSub.enabled:
             lat, lon, alt = InitSub.GB.ned_to_gps(wp.w[0], wp.w[1], wp.w[2])
-            WaypointSub.waypoints.append(renderable_wp(lat, lon, alt, wp.chi_d, wp.chi_valid, wp.Va_d))
+            WaypointSub.waypoints.append(renderable_wp(wp.w, lat, lon, alt, wp.chi_d, wp.chi_valid, wp.Va_d, set_current=wp.set_current))
             for rwp in WaypointSub.waypoints:
                 if not rwp.converted:
                     rwp.lat, rwp.lon, rwp.alt = InitSub.GB.ned_to_gps(rwp.lat, rwp.lon, rwp.alt)
                     rwp.converted = True
             WaypointSub.enabled = True
         else:
-            WaypointSub.waypoints.append(renderable_wp(wp.w[0], wp.w[1], wp.w[2], wp.chi_d, wp.chi_valid, wp.Va_d, False))
+            WaypointSub.waypoints.append(renderable_wp(wp.w[0], wp.w[1], wp.w[2], wp.chi_d, wp.chi_valid, wp.Va_d, False, set_current=wp.set_current))
             WaypointSub.enabled = False
 
     @staticmethod
@@ -266,6 +280,11 @@ class WaypointSub():
         if not WaypointSub.wp_sub is None:
             WaypointSub.wp_sub.unregister()
             WaypointSub.wp_sub = None
+
+    @staticmethod
+    def remove_waypoint(waypoint):
+        WaypointSub.waypoints.remove(waypoint)
+
 
 class ObstacleSub():
     obs_sub = None

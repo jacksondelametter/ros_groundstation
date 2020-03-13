@@ -14,6 +14,7 @@ from .map_subscribers import *
 import os
 from gm_plotter import LatLon
 from create_waypoint_popup import CreateWaypointPopup
+from waypoint_popup import WaypointPopup
 from rosplane_msgs.msg import Waypoint, State
 from map_subscribers import StateSub
 from op_window import OpWindow
@@ -27,8 +28,7 @@ class MarbleMap(QWidget):
         self.WPH = WP_Handler()
         self.setCursor(QCursor(Qt.CrossCursor))
 
-        # Code for determinig clicks
-        self.waypoints = []
+        self.waypoint_radius = 15
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -100,7 +100,7 @@ class MarbleMap(QWidget):
                     delta_y = self.lat_multiplier * qpoint_delta.y()
                     lat_incremented = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, delta_y, self.GMP.zoom)
                     self.GMP.UpdateView(lat_incremented, lon_incremented)
-                    print('InitialLat', self.latlon[0], 'initial lon', self.latlon[1])
+                    #print('InitialLat', self.latlon[0], 'initial lon', self.latlon[1])
                     self.mouse_event_counter = 0
 
     def recenter(self):
@@ -116,20 +116,35 @@ class MarbleMap(QWidget):
         self.setCursor(QCursor(Qt.ArrowCursor))
 
     def mousePressEvent(self, QMouseEvent):
-        if self._mouse_attentive:
-            mouse_click = QMouseEvent.pos()
+        mouse_click = QMouseEvent.pos()
+        waypoint = self.clicked_on_waypoint(mouse_click)
+        if QMouseEvent.button() == Qt.RightButton and waypoint is not None:
+            print("Clicked on waypoint")
+            self.waypoint_popup = WaypointPopup(self, waypoint)
+            self.waypoint_popup.show()
+        elif QMouseEvent.button() == Qt.RightButton:
+            #StateSub.injectState()
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
             waypoint_latlon = LatLon(lat, lon)
             #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
-            self.update()
-            self.deactivate_add_wp()
             self.show_waypoint_popup(waypoint_latlon)
 
         else:
+            print('Else called')
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
+
+    def clicked_on_waypoint(self, mouse_click):
+        for waypoint in WaypointSub.waypoints:
+            x = self.lon_to_pix(waypoint.lon)
+            y = self.lat_to_pix(waypoint.lat)
+            mouse_x = mouse_click.x()
+            mouse_y = mouse_click.y()
+            if mouse_x >= x-self.waypoint_radius and mouse_x <= x+self.waypoint_radius and mouse_y >= y-self.waypoint_radius and mouse_y <= y+self.waypoint_radius:
+                return waypoint
+        return None
 
     def mouseReleaseEvent(self, QMouseEvent):
         if not self._mouse_attentive:
@@ -140,21 +155,6 @@ class MarbleMap(QWidget):
             self.draw_gridlines = True
         else:
             self.draw_gridlines = False
-
-    def toggle_add_wp(self, mode):
-        self._mouse_attentive = mode
-        self.add_wp_button.setDown(mode)
-        self.add_wp_button.setCheckable(mode)
-
-    def set_add_wp(self):
-        self.toggle_add_wp(True)
-
-    def deactivate_add_wp(self):
-        self.toggle_add_wp(False)
-
-    def set_add_wp_button(self, button):
-        self.add_wp_button = button
-        self.add_wp_button.clicked.connect(self.set_add_wp)
 
     def show_waypoint_popup(self, wp_latlon):
         '''op = OpWindow(self)
@@ -172,6 +172,25 @@ class MarbleMap(QWidget):
         WaypointPub.publishWaypoint(wp)
         self.wp_popup.close()
         print('Added waypoint')
+
+    def go_to_waypoint(self, waypoint):
+        print('Going to waypoint')
+        WaypointSub.remove_waypoint(waypoint)
+        wp = Waypoint()
+        wp.w = waypoint.w
+        wp.chi_d = waypoint.chi_d
+        wp.chi_valid = waypoint.chi_valid
+        wp.Va_d = waypoint.Va_d
+        wp.set_current = True
+        WaypointPub.publishWaypoint(wp)
+        self.waypoint_popup.close()
+
+    def delete_waypoint(self, waypoint):
+        print('Deleting Waypoint')
+        WaypointSub.remove_waypoint(waypoint)
+        self.waypoint_popup.close()
+
+
 
 
     # =====================================================
@@ -196,13 +215,11 @@ class MarbleMap(QWidget):
             self.draw_waypoints(painter)
         if ObstacleSub.enabled:
             self.draw_obstacles(painter)
-        if PathSub.enabled:
-            self.draw_currentpath(painter)
+        '''if PathSub.enabled:
+                                    self.draw_currentpath(painter)'''
         if StateSub.enabled:
             self.draw_plane(painter)
 
-        # Draws waypoints
-        #self.draw_plane(painter)
         painter.end()
 
     # draws gridlines at 10-meter increments
@@ -240,9 +257,14 @@ class MarbleMap(QWidget):
                 painter.drawText(text_point, QString('%d m' % (y_line * self.grid_dist)))
 
     def draw_waypoints(self, painter):
-        painter.setPen(QPen(QBrush(Qt.darkRed), 2.5, Qt.SolidLine, Qt.RoundCap))
         # it can be assumed that all waypoints are converted to latlon if the sub is enabled
         for waypoint in WaypointSub.waypoints:
+            color = None
+            if waypoint.set_current:
+                color = QBrush(Qt.green)
+            else:
+                color = QBrush(Qt.darkRed)
+            painter.setPen(QPen(color, 2.5, Qt.SolidLine, Qt.RoundCap))
             x = self.lon_to_pix(waypoint.lon)
             y = self.lat_to_pix(waypoint.lat)
             '''print(x, ',', y)
