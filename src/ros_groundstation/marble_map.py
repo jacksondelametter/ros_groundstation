@@ -106,6 +106,9 @@ class MarbleMap(QWidget):
     def recenter(self):
         self.GMP.UpdateView(self.latlon[0], self.latlon[1])
 
+    def center_on_aircraft(self):
+        self.GMP.UpdateView(StateSub.lat, StateSub.lon)
+
     def enterEvent(self, QEvent):
         if self._mouse_attentive:
             self.setCursor(QCursor(Qt.CrossCursor))

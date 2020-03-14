@@ -38,6 +38,7 @@ class MapWindow(QWidget):
         self.init_op_window()
         self._recenter.clicked.connect(self._marble_map.recenter)
         self._clear_waypoints.clicked.connect(self.clear_wp_clicked)
+        self._find_aircraft.clicked.connect(self.find_aircraft_clicked)
 
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)
@@ -57,6 +58,9 @@ class MapWindow(QWidget):
 
     def clear_wp_clicked(self):
         WaypointPub.clear_waypoints()
+
+    def find_aircraft_clicked(self):
+        self._marble_map.center_on_aircraft()
 
 
     def save_settings(self, plugin_settings, instance_settings):

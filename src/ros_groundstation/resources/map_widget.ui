@@ -62,7 +62,7 @@
             <widget class="QPushButton" name="_map_options">
               <property name="maximumSize">
                 <size>
-                  <width>150</width>
+                  <width>100</width>
                   <height>16777215</height>
                 </size>
               </property>
@@ -72,10 +72,23 @@
             </widget>
           </item>
           <item>
+            <widget class="QPushButton" name="_find_aircraft">
+              <property name="maximumSize">
+                <size>
+                  <width>100</width>
+                  <height>16777215</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>Find Aircraft</string>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QPushButton" name="_recenter">
               <property name="maximumSize">
                 <size>
-                  <width>150</width>
+                  <width>100</width>
                   <height>16777215</height>
                 </size>
               </property>
