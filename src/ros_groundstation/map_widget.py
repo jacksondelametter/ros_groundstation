@@ -9,6 +9,7 @@ import os
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from waypoint_popup import WaypointPopup
+from .map_publishers import WaypointPub
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,6 +37,7 @@ class MapWindow(QWidget):
 
         self.init_op_window()
         self._recenter.clicked.connect(self._marble_map.recenter)
+        self._clear_waypoints.clicked.connect(self.clear_wp_clicked)
 
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)
@@ -52,6 +54,10 @@ class MapWindow(QWidget):
         self.wpWindow.close()
         self.cmWindow.close()
         super(MapWindow, self).close()
+
+    def clear_wp_clicked(self):
+        WaypointPub.clear_waypoints()
+
 
     def save_settings(self, plugin_settings, instance_settings):
         pass

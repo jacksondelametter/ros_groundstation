@@ -29,4 +29,11 @@ class WaypointPub:
 		print("closing publisher")
 		WaypointPub.reset()
 
+	@staticmethod
+	def clear_waypoints():
+		print('Clearing waypoints')
+		waypoint = Waypoint()
+		waypoint.clear_wp_list = True
+		WaypointPub.publishWaypoint(waypoint)
+
 

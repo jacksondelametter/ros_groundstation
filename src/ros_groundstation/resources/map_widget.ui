@@ -46,6 +46,19 @@
             </widget>
           </item>
           <item>
+            <widget class="QPushButton" name="_clear_waypoints">
+              <property name="maximumSize">
+                <size>
+                  <width>100</width>
+                  <height>16777215</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>Clear WP</string>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QPushButton" name="_map_options">
               <property name="maximumSize">
                 <size>

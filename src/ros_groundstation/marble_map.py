@@ -132,7 +132,6 @@ class MarbleMap(QWidget):
             self.show_waypoint_popup(waypoint_latlon)
 
         else:
-            print('Else called')
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
 
@@ -258,7 +257,10 @@ class MarbleMap(QWidget):
 
     def draw_waypoints(self, painter):
         # it can be assumed that all waypoints are converted to latlon if the sub is enabled
-        for waypoint in WaypointSub.waypoints:
+        font = QFont()
+        font.setPixelSize(20)
+        painter.setFont(font)
+        for index, waypoint in enumerate(WaypointSub.waypoints):
             color = None
             if waypoint.set_current:
                 color = QBrush(Qt.green)
@@ -270,8 +272,11 @@ class MarbleMap(QWidget):
             '''print(x, ',', y)
                                     sys.exit('')'''
             if x >=0 and x <= self.GMP.width and y >= 0 and y <= self.GMP.height:
-                rad = 15
-                painter.drawEllipse(x-rad, y-rad, 2*rad, 2*rad)
+                center = QPoint(x, y)
+                rad = 25
+                painter.drawEllipse(center, rad, rad)
+                rect = QRect(x-rad, y-rad, rad*2, rad*2)
+                painter.drawText(rect, Qt.AlignCenter, str(index+1))
                 '''if waypoint.chi_valid:
                                                         painter.drawLine(x, y, x+2*rad*sin(waypoint.chi_d), y-2*rad*cos(waypoint.chi_d))'''
 
