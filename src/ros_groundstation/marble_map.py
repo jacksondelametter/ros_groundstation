@@ -28,7 +28,8 @@ class MarbleMap(QWidget):
         self.WPH = WP_Handler()
         self.setCursor(QCursor(Qt.CrossCursor))
 
-        self.waypoint_radius = 15
+        self.waypoint_radius = 25
+        self.waypoints = []
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -120,27 +121,36 @@ class MarbleMap(QWidget):
 
     def mousePressEvent(self, QMouseEvent):
         mouse_click = QMouseEvent.pos()
-        if QMouseEvent.button() == Qt.RightButton:
+        wp_tuple = self.clicked_on_waypoint(mouse_click)
+        if QMouseEvent.button() == Qt.RightButton and wp_tuple is not None:
+            print("Clicked on waypoint")
+            self.wp_popup = CreateWaypointPopup(self, wp_tuple[1])
+            self.wp_popup.init_update_waypoint(wp_tuple[0], len(self.waypoints))
+            self.wp_popup.show()
+        elif QMouseEvent.button() == Qt.RightButton:
             #StateSub.injectState()
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
-            waypoint_latlon = LatLon(lat, lon)
+            w = self.GB.gps_to_ned(lat, lon, 0)
+            waypoint = Waypoint()
+            waypoint.w = w
             #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
-            self.show_waypoint_popup(waypoint_latlon)
+            self.show_waypoint_popup(waypoint)
 
         else:
-            self.movement_offset = mouse_click
+            self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
 
     def clicked_on_waypoint(self, mouse_click):
-        for waypoint in WaypointSub.waypoints:
-            x = self.lon_to_pix(waypoint.lon)
-            y = self.lat_to_pix(waypoint.lat)
+        for index, waypoint in enumerate(self.waypoints):
+            lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
+            x = self.lon_to_pix(lon)
+            y = self.lat_to_pix(lat)
             mouse_x = mouse_click.x()
             mouse_y = mouse_click.y()
             if mouse_x >= x-self.waypoint_radius and mouse_x <= x+self.waypoint_radius and mouse_y >= y-self.waypoint_radius and mouse_y <= y+self.waypoint_radius:
-                return waypoint
+                return (index, waypoint)
         return None
 
     def mouseReleaseEvent(self, QMouseEvent):
@@ -153,22 +163,24 @@ class MarbleMap(QWidget):
         else:
             self.draw_gridlines = False
 
-    def show_waypoint_popup(self, wp_latlon):
-        '''op = OpWindow(self)
-                                op.show()'''
-        self.wp_popup = CreateWaypointPopup(self, wp_latlon)
+    def show_waypoint_popup(self, waypoint):
+        self.wp_popup = CreateWaypointPopup(self, waypoint)
+        self.wp_popup.init_create_waypoint()
         self.wp_popup.show()
 
-    def create_wp(self, wp_latlon, air_speed, alt):
-        wp = Waypoint()
-        distance = self.GB.gps_to_ned(wp_latlon.lat, wp_latlon.lon, alt)
-        wp.w = distance
-        wp.Va_d = air_speed
-        #print('distance: ', distance)
-        #self.waypoints.append(wp)
-        WaypointPub.publishWaypoint(wp)
+    def create_wp(self, waypoint):
+        self.waypoints.append(waypoint)
         self.wp_popup.close()
+        #self.update()
         print('Added waypoint')
+
+    def update_wp(self, waypoint, new_index, prev_index):
+        old_waypoint = self.waypoints[new_index]
+        self.waypoints[new_index] = waypoint
+        self.waypoints[prev_index] = old_waypoint
+        self.wp_popup.close()
+        print('updated waypoint')
+
 
     def go_to_waypoint(self, waypoint):
         print('Going to waypoint')
@@ -182,13 +194,9 @@ class MarbleMap(QWidget):
         WaypointPub.publishWaypoint(wp)
         self.waypoint_popup.close()
 
-    def delete_waypoint(self, waypoint):
-        print('Deleting Waypoint')
-        WaypointSub.remove_waypoint(waypoint)
-        self.waypoint_popup.close()
-
-
-
+    def clear_waypoints(self):
+        self.waypoints = []
+        WaypointPub.clear_waypoints()
 
     # =====================================================
     # ==================== FOR DRAWING ====================
@@ -216,7 +224,7 @@ class MarbleMap(QWidget):
                                     self.draw_currentpath(painter)'''
         if StateSub.enabled:
             self.draw_plane(painter)
-
+        self.draw_waypoints(painter)
         painter.end()
 
     # draws gridlines at 10-meter increments
@@ -258,18 +266,19 @@ class MarbleMap(QWidget):
         font = QFont()
         font.setPixelSize(20)
         painter.setFont(font)
-        for index, waypoint in enumerate(WaypointSub.waypoints):
+        for index, waypoint in enumerate(self.waypoints):
             color = QBrush(Qt.darkRed)
             painter.setPen(QPen(color, 2.5, Qt.SolidLine, Qt.RoundCap))
-            x = self.lon_to_pix(waypoint.lon)
-            y = self.lat_to_pix(waypoint.lat)
+            lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
+            x = self.lon_to_pix(lon)
+            y = self.lat_to_pix(lat)
             '''print(x, ',', y)
                                     sys.exit('')'''
             if x >=0 and x <= self.GMP.width and y >= 0 and y <= self.GMP.height:
                 center = QPoint(x, y)
-                rad = 25
-                painter.drawEllipse(center, rad, rad)
-                rect = QRect(x-rad, y-rad, rad*2, rad*2)
+                painter.drawEllipse(center, self.waypoint_radius, self.waypoint_radius)
+                diameter = self.waypoint_radius * 2
+                rect = QRect(x-self.waypoint_radius, y-self.waypoint_radius, diameter, diameter)
                 painter.drawText(rect, Qt.AlignCenter, str(index+1))
                 '''if waypoint.chi_valid:
                                                         painter.drawLine(x, y, x+2*rad*sin(waypoint.chi_d), y-2*rad*cos(waypoint.chi_d))'''

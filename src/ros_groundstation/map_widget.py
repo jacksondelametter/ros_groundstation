@@ -57,7 +57,7 @@ class MapWindow(QWidget):
         super(MapWindow, self).close()
 
     def clear_wp_clicked(self):
-        WaypointPub.clear_waypoints()
+        self._marble_map.clear_waypoints()
 
     def find_aircraft_clicked(self):
         self._marble_map.center_on_aircraft()

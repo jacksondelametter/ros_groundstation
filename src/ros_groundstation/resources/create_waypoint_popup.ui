@@ -32,6 +32,10 @@
         </layout>
       </item>
       <item>
+        <widget class="QComboBox" name="_position_selector">
+        </widget>
+      </item>
+      <item>
         <widget class="QPushButton" name="_create_wp">
           <property name="text">
             <string>Create WP</string>

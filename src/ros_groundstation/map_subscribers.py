@@ -284,10 +284,6 @@ class WaypointSub():
             WaypointSub.wp_sub.unregister()
             WaypointSub.wp_sub = None
 
-    @staticmethod
-    def remove_waypoint(waypoint):
-        WaypointSub.waypoints.remove(waypoint)
-
 
 class ObstacleSub():
     obs_sub = None
