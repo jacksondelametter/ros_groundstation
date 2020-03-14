@@ -256,9 +256,9 @@ class WaypointSub():
 
     @staticmethod
     def waypoint_callback(wp):
-        '''if wp.clear_wp_list:
-                                    WaypointSub.waypoints = []
-                                    return'''
+        if wp.clear_wp_list:
+            WaypointSub.waypoints = []
+            return
         if InitSub.enabled:
             lat, lon, alt = InitSub.GB.ned_to_gps(wp.w[0], wp.w[1], wp.w[2])
             WaypointSub.waypoints.append(renderable_wp(wp.w, lat, lon, alt, wp.chi_d, wp.chi_valid, wp.Va_d, set_current=wp.set_current))
