@@ -120,12 +120,7 @@ class MarbleMap(QWidget):
 
     def mousePressEvent(self, QMouseEvent):
         mouse_click = QMouseEvent.pos()
-        waypoint = self.clicked_on_waypoint(mouse_click)
-        if QMouseEvent.button() == Qt.RightButton and waypoint is not None:
-            print("Clicked on waypoint")
-            self.waypoint_popup = WaypointPopup(self, waypoint)
-            self.waypoint_popup.show()
-        elif QMouseEvent.button() == Qt.RightButton:
+        if QMouseEvent.button() == Qt.RightButton:
             #StateSub.injectState()
             lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
             lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
@@ -135,7 +130,7 @@ class MarbleMap(QWidget):
             self.show_waypoint_popup(waypoint_latlon)
 
         else:
-            self.movement_offset = QMouseEvent.pos()
+            self.movement_offset = mouse_click
             self.setCursor(QCursor(Qt.ClosedHandCursor))
 
     def clicked_on_waypoint(self, mouse_click):
@@ -264,11 +259,7 @@ class MarbleMap(QWidget):
         font.setPixelSize(20)
         painter.setFont(font)
         for index, waypoint in enumerate(WaypointSub.waypoints):
-            color = None
-            if waypoint.set_current:
-                color = QBrush(Qt.green)
-            else:
-                color = QBrush(Qt.darkRed)
+            color = QBrush(Qt.darkRed)
             painter.setPen(QPen(color, 2.5, Qt.SolidLine, Qt.RoundCap))
             x = self.lon_to_pix(waypoint.lon)
             y = self.lat_to_pix(waypoint.lat)
