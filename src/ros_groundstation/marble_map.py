@@ -194,6 +194,11 @@ class MarbleMap(QWidget):
         WaypointPub.publishWaypoint(wp)
         self.waypoint_popup.close()
 
+    def start_waypoints(self):
+        for index, waypoint in enumerate(self.waypoints):
+            WaypointPub.publishWaypoint(waypoint)
+        print('Started Waypoints')
+
     def clear_waypoints(self):
         self.waypoints = []
         WaypointPub.clear_waypoints()
