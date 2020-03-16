@@ -19,6 +19,7 @@ from rosplane_msgs.msg import Waypoint, State
 from map_subscribers import StateSub
 from op_window import OpWindow
 from .map_publishers import *
+import time
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -196,6 +197,11 @@ class MarbleMap(QWidget):
 
     def start_waypoints(self):
         for index, waypoint in enumerate(self.waypoints):
+            if index == 0:
+                waypoint.set_current = True
+            else:
+                waypoint.set_current = False
+            waypoint.clear_wp_list = False
             WaypointPub.publishWaypoint(waypoint)
         print('Started Waypoints')
 
