@@ -26,6 +26,7 @@ class CreateWaypointPopup(QWidget):
 		self._enter_alt.setText(str(abs(self.waypoint.w[2])))
 		for i in range(waypoint_count):
 			self._position_selector.addItem(str(i + 1))
+		self._position_selector.setCurrentIndex(current_pos)
 		self._create_wp.clicked.connect(self.update_wp_clicked)
 
 	def get_waypoint_params(self):
