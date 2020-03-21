@@ -96,8 +96,6 @@ class MarbleMap(QWidget):
         if self.dragging_wp:
             moved_wp = self.initialize_wp(QMouseEvent.pos())
             self.waypoints[self.dragging_wp_index] = moved_wp
-
-
         elif not self._mouse_attentive: # we won't do anything with movement in point-and-click mode
             if QMouseEvent.buttons(): # in act of dragging
                 self.mouse_event_counter += 1
@@ -205,9 +203,12 @@ class MarbleMap(QWidget):
             WaypointPub.publishWaypoint(waypoint)
         print('Started Waypoints')
 
+    def stop_waypoints(self):
+        WaypointPub.clear_waypoints()
+
     def clear_waypoints(self):
         self.waypoints = []
-        WaypointPub.clear_waypoints()
+        self.stop_waypoints()
 
     def delete_wp(self, index):
         del self.waypoints[index]

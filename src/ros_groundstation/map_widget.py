@@ -39,7 +39,8 @@ class MapWindow(QWidget):
         self._recenter.clicked.connect(self._marble_map.recenter)
         self._clear_waypoints.clicked.connect(self.clear_wp_clicked)
         self._find_aircraft.clicked.connect(self.find_aircraft_clicked)
-        self._start_waypoints.clicked.connect(self.start_waypoints_clicked)
+        self.start = True
+        self._start_waypoints.clicked.connect(self.start_end_waypoints_clicked)
 
     def init_op_window(self):
         self.opWindow = OpWindow(self._marble_map)
@@ -63,8 +64,15 @@ class MapWindow(QWidget):
     def find_aircraft_clicked(self):
         self._marble_map.center_on_aircraft()
 
-    def start_waypoints_clicked(self):
-        self._marble_map.start_waypoints()
+    def start_end_waypoints_clicked(self):
+        if self.start:
+            self._marble_map.start_waypoints()
+            self._start_waypoints.setText('End Path')
+        else:
+            self._marble_map.stop_waypoints()
+            self._start_waypoints.setText('Start Path')
+
+        self.start = not self.start
 
     def save_settings(self, plugin_settings, instance_settings):
         pass

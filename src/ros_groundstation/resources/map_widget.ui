@@ -54,7 +54,7 @@
                 </size>
               </property>
               <property name="text">
-                <string>Start WP</string>
+                <string>Start Path</string>
               </property>
             </widget>
           </item>
