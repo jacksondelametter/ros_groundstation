@@ -31,6 +31,7 @@ class MarbleMap(QWidget):
 
         self.waypoint_radius = 25
         self.waypoints = []
+        self.dragging_wp = False
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -92,7 +93,12 @@ class MarbleMap(QWidget):
             self.wheel_angle = 0
 
     def mouseMoveEvent(self, QMouseEvent):
-        if not self._mouse_attentive: # we won't do anything with movement in point-and-click mode
+        if self.dragging_wp:
+            moved_wp = self.initialize_wp(QMouseEvent.pos())
+            self.waypoints[self.dragging_wp_index] = moved_wp
+
+
+        elif not self._mouse_attentive: # we won't do anything with movement in point-and-click mode
             if QMouseEvent.buttons(): # in act of dragging
                 self.mouse_event_counter += 1
                 if self.mouse_event_counter > self.counter_limit:
@@ -130,18 +136,24 @@ class MarbleMap(QWidget):
             self.wp_popup.show()
         elif QMouseEvent.button() == Qt.RightButton:
             #StateSub.injectState()
-            lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
-            lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
-            w = self.GB.gps_to_ned(lat, lon, 0)
-            waypoint = Waypoint()
-            waypoint.w = w
+            waypoint = self.initialize_wp(mouse_click)
             #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
             self.show_waypoint_popup(waypoint)
-
+        elif QMouseEvent.button() == Qt.LeftButton and wp_tuple is not None:
+            self.dragging_wp = True
+            self.dragging_wp_index = wp_tuple[0]
         else:
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
+
+    def initialize_wp(self, mouse_click):
+        lon = GoogleMapPlotter.pix_to_rel_lon(self.GMP.center.lon, mouse_click.x() - self.GMP.width/2, self.GMP.zoom)
+        lat = GoogleMapPlotter.pix_to_rel_lat(self.GMP.center.lat, mouse_click.y() - self.GMP.height/2, self.GMP.zoom)
+        w = self.GB.gps_to_ned(lat, lon, 0)
+        waypoint = Waypoint()
+        waypoint.w = w
+        return waypoint
 
     def clicked_on_waypoint(self, mouse_click):
         for index, waypoint in enumerate(self.waypoints):
@@ -155,6 +167,7 @@ class MarbleMap(QWidget):
         return None
 
     def mouseReleaseEvent(self, QMouseEvent):
+        self.dragging_wp = False
         if not self._mouse_attentive:
             self.setCursor(QCursor(Qt.OpenHandCursor))
 
