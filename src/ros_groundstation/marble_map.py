@@ -182,19 +182,6 @@ class MarbleMap(QWidget):
         self.wp_popup.close()
         print('updated waypoint')
 
-
-    def go_to_waypoint(self, waypoint):
-        print('Going to waypoint')
-        WaypointSub.remove_waypoint(waypoint)
-        wp = Waypoint()
-        wp.w = waypoint.w
-        wp.chi_d = waypoint.chi_d
-        wp.chi_valid = waypoint.chi_valid
-        wp.Va_d = waypoint.Va_d
-        wp.set_current = True
-        WaypointPub.publishWaypoint(wp)
-        self.waypoint_popup.close()
-
     def start_waypoints(self):
         for index, waypoint in enumerate(self.waypoints):
             if index == 0:
@@ -208,6 +195,10 @@ class MarbleMap(QWidget):
     def clear_waypoints(self):
         self.waypoints = []
         WaypointPub.clear_waypoints()
+
+    def delete_wp(self, index):
+        del self.waypoints[index]
+        self.wp_popup.close()
 
     # =====================================================
     # ==================== FOR DRAWING ====================

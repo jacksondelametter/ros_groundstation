@@ -42,6 +42,13 @@
           </property>
         </widget>
       </item>
+      <item>
+        <widget class="QPushButton" name="_delete_wp">
+          <property name="text">
+            <string>Delete WP</string>
+          </property>
+        </widget>
+      </item>
     </layout>
   </widget>
 </ui>

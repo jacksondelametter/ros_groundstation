@@ -19,6 +19,7 @@ class CreateWaypointPopup(QWidget):
 	def init_create_waypoint(self):
 		self._position_selector.addItem('Append')
 		self._create_wp.clicked.connect(self.create_wp_clicked)
+		self._delete_wp.hide()
 
 	def init_update_waypoint(self, current_pos, waypoint_count):
 		self.current_pos = current_pos
@@ -27,7 +28,9 @@ class CreateWaypointPopup(QWidget):
 		for i in range(waypoint_count):
 			self._position_selector.addItem(str(i + 1))
 		self._position_selector.setCurrentIndex(current_pos)
+		self._create_wp.setText("Update WP")
 		self._create_wp.clicked.connect(self.update_wp_clicked)
+		self._delete_wp.clicked.connect(self.delete_wp)
 
 	def get_waypoint_params(self):
 		try:
@@ -50,5 +53,8 @@ class CreateWaypointPopup(QWidget):
 		if self.get_waypoint_params() is False:
 			return
 		self.marble.create_wp(self.waypoint)
+
+	def delete_wp(self):
+		self.marble.delete_wp(self.current_pos)
 
 
