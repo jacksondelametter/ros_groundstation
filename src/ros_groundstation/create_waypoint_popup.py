@@ -8,13 +8,13 @@ from gm_plotter import LatLon
 PWD = os.path.dirname(os.path.abspath(__file__))
 
 class CreateWaypointPopup(QWidget):
-	def __init__(self, marble_map, waypoint, uifname='create_waypoint_popup.ui'):
+	def __init__(self, marble_map, waypoint_data, uifname='create_waypoint_popup.ui'):
 		super(CreateWaypointPopup, self).__init__()
 		print('Created waypoint popup')
 		ui_file = os.path.join(PWD, 'resources', uifname)
 		loadUi(ui_file, self)
 		self.marble = marble_map
-		self.waypoint = waypoint
+		self.waypoint_data = waypoint_data
 
 	def init_create_waypoint(self):
 		self._position_selector.addItem('Append')
@@ -22,9 +22,10 @@ class CreateWaypointPopup(QWidget):
 		self._delete_wp.hide()
 
 	def init_update_waypoint(self, current_pos, waypoint_count):
+		waypoint = self.waypoint_data.waypoint
 		self.current_pos = current_pos
-		self._enter_air_speed.setText(str(self.waypoint.Va_d))
-		self._enter_alt.setText(str(abs(self.waypoint.w[2])))
+		self._enter_air_speed.setText(str(waypoint.Va_d))
+		self._enter_alt.setText(str(abs(waypoint.w[2])))
 		for i in range(waypoint_count):
 			self._position_selector.addItem(str(i + 1))
 		self._position_selector.setCurrentIndex(current_pos)
@@ -36,8 +37,8 @@ class CreateWaypointPopup(QWidget):
 		try:
 			air_speed = float(self._enter_air_speed.text())
 			alt = float(self._enter_alt.text()) * -1
-			self.waypoint.Va_d = air_speed
-			self.waypoint.w[2] = alt
+			self.waypoint_data.waypoint.Va_d = air_speed
+			self.waypoint_data.waypoint.w[2] = alt
 			return True
 		except:
 			print('Enter legal air speed and/or alt')
@@ -47,12 +48,12 @@ class CreateWaypointPopup(QWidget):
 		if self.get_waypoint_params() is False:
 			return
 		changed_index = self._position_selector.currentIndex()
-		self.marble.update_wp(self.waypoint, changed_index, self.current_pos)
+		self.marble.update_wp(self.waypoint_data, changed_index, self.current_pos)
 
 	def create_wp_clicked(self):
 		if self.get_waypoint_params() is False:
 			return
-		self.marble.create_wp(self.waypoint)
+		self.marble.create_wp(self.waypoint_data)
 
 	def delete_wp(self):
 		self.marble.delete_wp(self.current_pos)

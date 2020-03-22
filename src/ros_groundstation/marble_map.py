@@ -23,6 +23,14 @@ import time
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
+class WaypointData:
+
+    def __init__(self, waypoint):
+        self.waypoint = waypoint
+
+    def set_activity(self, active):
+        self.is_active = active
+
 class MarbleMap(QWidget):
     def __init__(self, gps_dict, blankname, parent=None):
         super(MarbleMap, self).__init__() # QWidget constructor
@@ -41,7 +49,6 @@ class MarbleMap(QWidget):
 
         self.GB = Geobase(self.latlon[0], self.latlon[1]) # For full current path drawer
         self._mouse_attentive = False
-        #self._mouse_attentive = True
         self.movement_offset = QPoint(0,0)
 
         self.mouse_event_counter = 0
@@ -94,8 +101,8 @@ class MarbleMap(QWidget):
 
     def mouseMoveEvent(self, QMouseEvent):
         if self.dragging_wp:
-            moved_wp = self.initialize_wp(QMouseEvent.pos())
-            self.waypoints[self.dragging_wp_index] = moved_wp
+            moved_wp_data = self.initialize_wp(QMouseEvent.pos())
+            self.waypoints[self.dragging_wp_index] = moved_wp_data
         elif not self._mouse_attentive: # we won't do anything with movement in point-and-click mode
             if QMouseEvent.buttons(): # in act of dragging
                 self.mouse_event_counter += 1
@@ -134,10 +141,10 @@ class MarbleMap(QWidget):
             self.wp_popup.show()
         elif QMouseEvent.button() == Qt.RightButton:
             #StateSub.injectState()
-            waypoint = self.initialize_wp(mouse_click)
+            waypoint_data = self.initialize_wp(mouse_click)
             #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
-            self.show_waypoint_popup(waypoint)
+            self.show_waypoint_popup(waypoint_data)
         elif QMouseEvent.button() == Qt.LeftButton and wp_tuple is not None:
             self.dragging_wp = True
             self.dragging_wp_index = wp_tuple[0]
@@ -151,17 +158,18 @@ class MarbleMap(QWidget):
         w = self.GB.gps_to_ned(lat, lon, 0)
         waypoint = Waypoint()
         waypoint.w = w
-        return waypoint
+        return WaypointData(waypoint)
 
     def clicked_on_waypoint(self, mouse_click):
-        for index, waypoint in enumerate(self.waypoints):
+        for index, waypoint_data in enumerate(self.waypoints):
+            waypoint = waypoint_data.waypoint
             lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
             x = self.lon_to_pix(lon)
             y = self.lat_to_pix(lat)
             mouse_x = mouse_click.x()
             mouse_y = mouse_click.y()
             if mouse_x >= x-self.waypoint_radius and mouse_x <= x+self.waypoint_radius and mouse_y >= y-self.waypoint_radius and mouse_y <= y+self.waypoint_radius:
-                return (index, waypoint)
+                return (index, waypoint_data)
         return None
 
     def mouseReleaseEvent(self, QMouseEvent):
@@ -175,32 +183,31 @@ class MarbleMap(QWidget):
         else:
             self.draw_gridlines = False
 
-    def show_waypoint_popup(self, waypoint):
-        self.wp_popup = CreateWaypointPopup(self, waypoint)
+    def show_waypoint_popup(self, waypoint_data):
+        self.wp_popup = CreateWaypointPopup(self, waypoint_data)
         self.wp_popup.init_create_waypoint()
         self.wp_popup.show()
 
-    def create_wp(self, waypoint):
-        self.waypoints.append(waypoint)
+    def create_wp(self, waypoint_data):
+        self.waypoints.append(waypoint_data)
         self.wp_popup.close()
-        #self.update()
         print('Added waypoint')
 
-    def update_wp(self, waypoint, new_index, prev_index):
-        old_waypoint = self.waypoints[new_index]
-        self.waypoints[new_index] = waypoint
-        self.waypoints[prev_index] = old_waypoint
+    def update_wp(self, waypoint_data, new_index, prev_index):
+        old_waypoint_data = self.waypoints[new_index]
+        self.waypoints[new_index] = waypoint_data
+        self.waypoints[prev_index] = old_waypoint_data
         self.wp_popup.close()
         print('updated waypoint')
 
     def start_waypoints(self):
-        for index, waypoint in enumerate(self.waypoints):
+        for index, waypoint_data in enumerate(self.waypoints):
             if index == 0:
-                waypoint.set_current = True
+                waypoint_data.waypoint.set_current = True
             else:
-                waypoint.set_current = False
-            waypoint.clear_wp_list = False
-            WaypointPub.publishWaypoint(waypoint)
+                waypoint_data.waypoint.set_current = False
+            waypoint_data.waypoint.clear_wp_list = False
+            WaypointPub.publishWaypoint(waypoint_data.waypoint)
         print('Started Waypoints')
 
     def stop_waypoints(self):
@@ -232,8 +239,6 @@ class MarbleMap(QWidget):
         painter.setPen(QPen(QBrush(Qt.blue), 2, Qt.SolidLine, Qt.RoundCap))
         painter.drawLine(self.GMP.width/2, self.GMP.height/2-8, self.GMP.width/2, self.GMP.height/2+8)
         painter.drawLine(self.GMP.width/2-8, self.GMP.height/2, self.GMP.width/2+8, self.GMP.height/2)
-        if WaypointSub.enabled:
-            self.draw_waypoints(painter)
         if ObstacleSub.enabled:
             self.draw_obstacles(painter)
         '''if PathSub.enabled:
@@ -282,7 +287,8 @@ class MarbleMap(QWidget):
         font = QFont()
         font.setPixelSize(20)
         painter.setFont(font)
-        for index, waypoint in enumerate(self.waypoints):
+        for index, waypoint_data in enumerate(self.waypoints):
+            waypoint = waypoint_data.waypoint
             color = QBrush(Qt.darkRed)
             painter.setPen(QPen(color, 2.5, Qt.SolidLine, Qt.RoundCap))
             lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
