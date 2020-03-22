@@ -31,6 +31,9 @@ class WaypointData:
     def set_activity(self, active):
         self.is_active = active
 
+    def get_activity(self):
+        return self.is_active
+
 class MarbleMap(QWidget):
     def __init__(self, gps_dict, blankname, parent=None):
         super(MarbleMap, self).__init__() # QWidget constructor
@@ -158,10 +161,14 @@ class MarbleMap(QWidget):
         w = self.GB.gps_to_ned(lat, lon, 0)
         waypoint = Waypoint()
         waypoint.w = w
-        return WaypointData(waypoint)
+        waypoint_data = WaypointData(waypoint)
+        waypoint_data.set_activity(False)
+        return waypoint_data
 
     def clicked_on_waypoint(self, mouse_click):
         for index, waypoint_data in enumerate(self.waypoints):
+            if waypoint_data.get_activity():
+                continue
             waypoint = waypoint_data.waypoint
             lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
             x = self.lon_to_pix(lon)
@@ -207,15 +214,18 @@ class MarbleMap(QWidget):
             else:
                 waypoint_data.waypoint.set_current = False
             waypoint_data.waypoint.clear_wp_list = False
+            waypoint_data.set_activity(True)
             WaypointPub.publishWaypoint(waypoint_data.waypoint)
         print('Started Waypoints')
 
     def stop_waypoints(self):
+        for waypoint_data in self.waypoints:
+            waypoint_data.set_activity(False)
         WaypointPub.clear_waypoints()
 
     def clear_waypoints(self):
-        self.waypoints = []
         self.stop_waypoints()
+        self.waypoints = []
 
     def delete_wp(self, index):
         del self.waypoints[index]
@@ -289,7 +299,11 @@ class MarbleMap(QWidget):
         painter.setFont(font)
         for index, waypoint_data in enumerate(self.waypoints):
             waypoint = waypoint_data.waypoint
-            color = QBrush(Qt.darkRed)
+            color = None
+            if waypoint_data.get_activity():
+                color = QBrush(Qt.green)
+            else:
+                color = QBrush(Qt.darkRed)
             painter.setPen(QPen(color, 2.5, Qt.SolidLine, Qt.RoundCap))
             lat, lon, alt = self.GB.ned_to_gps(waypoint.w[0], waypoint.w[1], waypoint.w[2])
             x = self.lon_to_pix(lon)
