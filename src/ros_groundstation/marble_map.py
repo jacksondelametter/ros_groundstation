@@ -43,6 +43,7 @@ class MarbleMap(QWidget):
         self.waypoint_radius = 25
         self.waypoints = []
         self.dragging_wp = False
+        self.path_started = False
 
         self._gps_dict = gps_dict
         self.blankname = blankname
@@ -137,21 +138,25 @@ class MarbleMap(QWidget):
     def mousePressEvent(self, QMouseEvent):
         mouse_click = QMouseEvent.pos()
         wp_tuple = self.clicked_on_waypoint(mouse_click)
-        if QMouseEvent.button() == Qt.RightButton and wp_tuple is not None:
+        if QMouseEvent.button() == Qt.RightButton and wp_tuple is not None and self.path_started is False:
+            # Editing waypoint
             print("Clicked on waypoint")
             self.wp_popup = CreateWaypointPopup(self, wp_tuple[1])
             self.wp_popup.init_update_waypoint(wp_tuple[0], len(self.waypoints))
             self.wp_popup.show()
-        elif QMouseEvent.button() == Qt.RightButton:
+        elif QMouseEvent.button() == Qt.LeftButton and wp_tuple is not None and self.path_started is False:
+            # Dragging waypoint
+            self.dragging_wp = True
+            self.dragging_wp_index = wp_tuple[0]
+        elif QMouseEvent.button() == Qt.RightButton and self.path_started is False:
+            # Creating waypoint
             #StateSub.injectState()
             waypoint_data = self.initialize_wp(mouse_click)
             #self.waypoints.append(LatLon(lat, lon))
             #print('lat: ', lat, " lon: ", lon)
             self.show_waypoint_popup(waypoint_data)
-        elif QMouseEvent.button() == Qt.LeftButton and wp_tuple is not None:
-            self.dragging_wp = True
-            self.dragging_wp_index = wp_tuple[0]
         else:
+            # Dragging map
             self.movement_offset = QMouseEvent.pos()
             self.setCursor(QCursor(Qt.ClosedHandCursor))
 
@@ -208,6 +213,7 @@ class MarbleMap(QWidget):
         print('updated waypoint')
 
     def start_waypoints(self):
+        self.path_started = True
         for index, waypoint_data in enumerate(self.waypoints):
             if index == 0:
                 waypoint_data.waypoint.set_current = True
@@ -219,6 +225,7 @@ class MarbleMap(QWidget):
         print('Started Waypoints')
 
     def stop_waypoints(self):
+        self.path_started = False
         for waypoint_data in self.waypoints:
             waypoint_data.set_activity(False)
         WaypointPub.clear_waypoints()
